@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import init_db
-from app.routers import auth, food
+from app.routers import auth, food, chat
 import time
 import os
 
@@ -50,6 +50,7 @@ if os.path.exists(settings.UPLOAD_DIR):
 # Include routers
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(food.router, prefix=settings.API_V1_PREFIX)
+app.include_router(chat.router, prefix=settings.API_V1_PREFIX)
 
 
 # Root endpoint

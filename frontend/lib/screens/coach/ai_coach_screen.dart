@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../config/colors.dart';
 import '../../models/chat_message.dart';
+import '../../services/api_service.dart';
 
 class AiCoachScreen extends StatefulWidget {
   const AiCoachScreen({super.key});
@@ -62,9 +63,13 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     _messageController.clear();
     _scrollToBottom();
 
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 2), () {
-      final aiResponse = _generateAiResponse(userMessage.content);
+    // Send to Real AI API
+    try {
+      final apiService = ApiService(); // Use dependency injection in real app
+      final aiResponse = await apiService.sendChatMessage(userMessage.content);
+      
+      if (!mounted) return;
+
       setState(() {
         _messages.add(ChatMessage(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -75,20 +80,20 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
         _isTyping = false;
       });
       _scrollToBottom();
-    });
-  }
-
-  String _generateAiResponse(String userMessage) {
-    final lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.contains('protein') || lowerMessage.contains('muscle')) {
-      return '💪 For muscle building, aim for 1.6-2.2g of protein per kg of body weight daily. Great sources include:\n\n• Chicken breast (31g per 100g)\n• Greek yogurt (10g per 100g)\n• Lentils (9g per 100g)\n• Eggs (13g per 100g)\n\nWould you like a high-protein meal plan?';
-    } else if (lowerMessage.contains('weight') || lowerMessage.contains('lose')) {
-      return '🎯 For healthy weight loss:\n\n• Create a 500 calorie deficit\n• Eat protein-rich foods\n• Stay hydrated (2-3L water)\n• Exercise 3-4 times/week\n• Get 7-8 hours sleep\n\nShall I create a personalized plan for you?';
-    } else if (lowerMessage.contains('sugar') || lowerMessage.contains('diabetes')) {
-      return '🍬 To manage blood sugar:\n\n• Limit added sugars to <25g/day\n• Choose complex carbs (brown rice, quinoa)\n• Pair carbs with protein/fat\n• Avoid sugary drinks\n• Monitor portions\n\nNeed help with a low-sugar meal plan?';
-    } else {
-      return '🤔 That\'s a great question! Based on your nutrition goals, I recommend:\n\n• Tracking your daily intake\n• Eating whole, unprocessed foods\n• Staying consistent with meals\n• Listening to your body\n\nWhat specific area would you like to focus on?';
+      
+    } catch (e) {
+      if (!mounted) return;
+      
+      setState(() {
+        _messages.add(ChatMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          content: "Sorry, I'm having trouble connecting to the server. Please match sure the backend is running!",
+          isUser: false,
+          timestamp: DateTime.now(),
+        ));
+        _isTyping = false;
+      });
+      _scrollToBottom();
     }
   }
 

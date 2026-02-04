@@ -142,4 +142,21 @@ class ApiService {
       rethrow;
     }
   }
+
+  // AI Chat
+  Future<String> sendChatMessage(String message) async {
+    try {
+      final response = await _dio.post(
+        '/chat',
+        data: {'message': message},
+      );
+      return response.data['response'];
+    } catch (e) {
+      if (e is DioException && e.response?.statusCode == 404) {
+        // Fallback for mocked backend if endpoint doesn't exist yet
+        return "I'm having trouble connecting to my brain right now. Please try again later.";
+      }
+      rethrow;
+    }
+  }
 }

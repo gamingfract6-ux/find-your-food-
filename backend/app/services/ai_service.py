@@ -1,183 +1,71 @@
 """
 AI Service for food recognition and analysis
-This is a MOCK service that simulates AI food detection
-In production, replace with real trained model (EfficientNet, ViT, etc.)
+Uses Google Gemini Vision Pro for real-time food detection
 """
-import random
 import time
+import os
+import json
 from typing import List, Dict, Tuple
+import google.generativeai as genai
 from PIL import Image
 import io
+from dotenv import load_dotenv
 
+# Load environment variables
+load_dotenv()
 
 class AIFoodRecognitionService:
     """
-    Mock AI service for food recognition
-    Simulates deep learning model inference
+    Real AI service using Google Gemini Vision
     """
     
-    # Mock food database with common foods
-    FOOD_DATABASE = {
-        "biryani": {
-            "category": "indian",
-            "calories_per_100g": 200,
-            "protein": 6.5,
-            "carbs": 35.0,
-            "fats": 4.5,
-            "fiber": 1.5,
-            "sugar": 2.0,
-            "sodium": 380
-        },
-        "pizza": {
-            "category": "italian",
-            "calories_per_100g": 266,
-            "protein": 11.0,
-            "carbs": 33.0,
-            "fats": 10.0,
-            "fiber": 2.3,
-            "sugar": 3.7,
-            "sodium": 598
-        },
-        "burger": {
-            "category": "american",
-            "calories_per_100g": 295,
-            "protein": 17.0,
-            "carbs": 24.0,
-            "fats": 14.0,
-            "fiber": 1.5,
-            "sugar": 5.0,
-            "sodium": 497
-        },
-        "dosa": {
-            "category": "indian",
-            "calories_per_100g": 133,
-            "protein": 3.9,
-            "carbs": 25.0,
-            "fats": 1.8,
-            "fiber": 1.2,
-            "sugar": 0.5,
-            "sodium": 115
-        },
-        "samosa": {
-            "category": "indian",
-            "calories_per_100g": 262,
-            "protein": 5.0,
-            "carbs": 28.0,
-            "fats": 14.0,
-            "fiber": 3.0,
-            "sugar": 1.5,
-            "sodium": 422
-        },
-        "apple": {
-            "category": "fruit",
-            "calories_per_100g": 52,
-            "protein": 0.3,
-            "carbs": 14.0,
-            "fats": 0.2,
-            "fiber": 2.4,
-            "sugar": 10.4,
-            "sodium": 1
-        },
-        "banana": {
-            "category": "fruit",
-            "calories_per_100g": 89,
-            "protein": 1.1,
-            "carbs": 23.0,
-            "fats": 0.3,
-            "fiber": 2.6,
-            "sugar": 12.0,
-            "sodium": 1
-        },
-        "rice": {
-            "category": "grain",
-            "calories_per_100g": 130,
-            "protein": 2.7,
-            "carbs": 28.0,
-            "fats": 0.3,
-            "fiber": 0.4,
-            "sugar": 0.1,
-            "sodium": 1
-        },
-        "dal": {
-            "category": "indian",
-            "calories_per_100g": 116,
-            "protein": 9.0,
-            "carbs": 20.0,
-            "fats": 0.4,
-            "fiber": 7.9,
-            "sugar": 1.8,
-            "sodium": 238
-        },
-        "chapati": {
-            "category": "indian",
-            "calories_per_100g": 297,
-            "protein": 11.8,
-            "carbs": 51.0,
-            "fats": 5.0,
-            "fiber": 7.3,
-            "sugar": 1.0,
-            "sodium": 318
-        },
-        "pasta": {
-            "category": "italian",
-            "calories_per_100g": 158,
-            "protein": 5.8,
-            "carbs": 31.0,
-            "fats": 0.9,
-            "fiber": 1.8,
-            "sugar": 2.7,
-            "sodium": 6
-        },
-        "chicken curry": {
-            "category": "indian",
-            "calories_per_100g": 166,
-            "protein": 24.0,
-            "carbs": 5.0,
-            "fats": 5.5,
-            "fiber": 1.0,
-            "sugar": 2.0,
-            "sodium": 340
-        },
-        "salad": {
-            "category": "healthy",
-            "calories_per_100g": 33,
-            "protein": 1.4,
-            "carbs": 6.3,
-            "fats": 0.3,
-            "fiber": 2.1,
-            "sugar": 3.1,
-            "sodium": 28
-        },
-        "sandwich": {
-            "category": "american",
-            "calories_per_100g": 245,
-            "protein": 10.0,
-            "carbs": 32.0,
-            "fats": 8.0,
-            "fiber": 2.8,
-            "sugar": 5.5,
-            "sodium": 512
-        },
-        "idli": {
-            "category": "indian",
-            "calories_per_100g": 58,
-            "protein": 2.0,
-            "carbs": 12.0,
-            "fats": 0.2,
-            "fiber": 0.6,
-            "sugar": 0.3,
-            "sodium": 42
-        }
-    }
-    
     def __init__(self):
-        """Initialize the AI service"""
-        self.model_loaded = True
-        print("[AI] Food Recognition Service initialized (MOCK MODE)")
+        """Initialize the AI service with Google API Key"""
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            print("[AI] WARNING: GOOGLE_API_KEY not found. AI features will fail.")
+            self.model = None
+            return
+
+        try:
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel('gemini-pro-vision')
+            print("[AI] Gemini Vision Service initialized successfully")
+            
+            # Initialize text model for chat
+            self.chat_model = genai.GenerativeModel('gemini-pro')
+            
+        except Exception as e:
+            print(f"[AI] Failed to initialize Gemini: {e}")
+            self.model = None
+            self.chat_model = None
+    
+    async def get_chat_response(self, message: str) -> str:
+        """
+        Get response from AI Coach (Gemini Pro)
+        """
+        if not self.chat_model:
+            return "I'm having trouble connecting to my brain right now. Please check the API key."
+            
+        try:
+            prompt = f"""
+            You are an expert AI Nutrition Coach named "CalorAI Coach". 
+            Your goal is to help users eat healthy, lose weight, and build muscle.
+            Keep your answers short, encouraging, and emoji-friendly.
+            
+            User: {message}
+            
+            Coach:
+            """
+            response = self.chat_model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            print(f"[AI] Chat Error: {e}")
+            return "I'm having a bit of trouble thinking right now. Ask me again in a moment!"
     
     async def analyze_image(self, image_bytes: bytes) -> Tuple[List[Dict], float]:
         """
-        Analyze food image and detect food items
+        Analyze food image using Gemini Vision
         
         Args:
             image_bytes: Image file bytes
@@ -185,77 +73,70 @@ class AIFoodRecognitionService:
         Returns:
             Tuple of (detected_foods, confidence_score)
         """
+        if not self.model:
+            # Fallback for when API key is missing (Return empty to prompt user)
+            print("[AI] Error: Model not initialized (Missing API Key)")
+            return [], 0.0
+
         start_time = time.time()
         
-        # Simulate image preprocessing
         try:
+            # Load image for Gemini
             image = Image.open(io.BytesIO(image_bytes))
-            # Simulate model inference delay
-            await self._simulate_processing(0.5, 1.5)
+            
+            # Prompt for Gemini
+            prompt = """
+            Analyze this image and identify any food items. 
+            Return ONLY a valid JSON array of objects. Do not use Markdown code blocks.
+            Each object should have:
+            - name (string): Name of the food
+            - confidence (float): 0.0 to 1.0
+            - calories (float): Estimated calories per 100g
+            - protein (float): Estimated protein (g) per 100g
+            - carbs (float): Estimated carbs (g) per 100g
+            - fats (float): Estimated fats (g) per 100g
+            - fiber (float): Estimated fiber (g) per 100g
+            - sugar (float): Estimated sugar (g) per 100g
+            - sodium (float): Estimated sodium (mg) per 100g
+            - portion (string): Estimated portion size description (e.g. "1 cup", "1 slice")
+            - weight_grams (int): Estimated weight of the portion in the image
+            
+            If no food is detected, return an empty array [].
+            """
+            
+            # Generate response
+            response = self.model.generate_content([prompt, image])
+            response_text = response.text
+            
+            # Clean response (remove markdown if present)
+            if response_text.startswith("```json"):
+                response_text = response_text.replace("```json", "").replace("```", "")
+            
+            # Parse JSON
+            detected_foods = json.loads(response_text)
+            
+            # Calculate overall confidence
+            if detected_foods:
+                overall_confidence = sum(f.get("confidence", 0.8) for f in detected_foods) / len(detected_foods)
+            else:
+                overall_confidence = 0.0
+                
+            return detected_foods, round(overall_confidence, 2)
+
         except Exception as e:
-            raise ValueError(f"Invalid image: {str(e)}")
-        
-        # Mock detection: randomly detect 1-3 food items
-        num_foods = random.randint(1, 3)
-        available_foods = list(self.FOOD_DATABASE.keys())
-        detected_food_names = random.sample(available_foods, num_foods)
-        
-        detected_foods = []
-        overall_confidence = random.uniform(0.85, 0.98)
-        
-        for food_name in detected_food_names:
-            food_data = self.FOOD_DATABASE[food_name]
-            
-            # Estimate portion size (mock)
-            portion_grams = random.choice([100, 150, 200, 250, 300])
-            portion_text = self._estimate_portion_text(food_name, portion_grams)
-            
-            # Calculate nutrition based on portion
-            multiplier = portion_grams / 100.0
-            
-            detected_foods.append({
-                "name": food_name,
-                "confidence": round(random.uniform(0.85, 0.99), 2),
-                "calories": round(food_data["calories_per_100g"] * multiplier, 1),
-                "protein": round(food_data["protein"] * multiplier, 1),
-                "carbs": round(food_data["carbs"] * multiplier, 1),
-                "fats": round(food_data["fats"] * multiplier, 1),
-                "fiber": round(food_data.get("fiber", 0) * multiplier, 1),
-                "sugar": round(food_data.get("sugar", 0) * multiplier, 1),
-                "sodium": round(food_data.get("sodium", 0) * multiplier, 1),
-                "portion": portion_text,
-                "weight_grams": portion_grams
-            })
-        
-        analysis_time = time.time() - start_time
-        
-        return detected_foods, round(overall_confidence, 2)
-    
-    def _estimate_portion_text(self, food_name: str, grams: float) -> str:
-        """Convert grams to human-readable portion"""
-        portions = {
-            "rice": f"{int(grams/150)} cup" if grams >= 150 else "1 cup",
-            "biryani": f"{int(grams/200)} plate" if grams >= 200 else "1 plate",
-            "pizza": f"{int(grams/100)} slice" if grams >= 100 else "1 slice",
-            "burger": "1 burger",
-            "dosa": f"{int(grams/60)} piece" if grams >= 60 else "1 piece",
-            "samosa": f"{int(grams/50)} piece" if grams >= 50 else "1 piece",
-            "apple": "1 medium",
-            "banana": "1 medium",
-            "idli": f"{int(grams/30)} piece" if grams >= 30 else "1 piece",
-        }
-        return portions.get(food_name, f"{grams}g")
-    
-    async def _simulate_processing(self, min_delay: float, max_delay: float):
-        """Simulate AI model processing time"""
-        import asyncio
-        delay = random.uniform(min_delay, max_delay)
-        await asyncio.sleep(delay)
+            print(f"[AI] Error analyzing image: {e}")
+            # Identify if it's a safety block or other error
+            return [], 0.0
     
     def get_food_info(self, food_name: str) -> Dict:
-        """Get nutrition info for a specific food"""
-        return self.FOOD_DATABASE.get(food_name.lower())
+        """
+        Get nutrition info for a specific food (Text-only Gemini)
+        """
+        # For now, we rely on the visual analysis. 
+        # In a full upgrade, we would add a text-only Gemini fallback here.
+        return None
 
 
 # Global AI service instance
 ai_service = AIFoodRecognitionService()
+
