@@ -45,7 +45,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
     final userMessage = ChatMessage(
