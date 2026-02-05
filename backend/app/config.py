@@ -30,8 +30,8 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/auth/callback"
     
-    # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
+    # CORS - Allow all localhost origins for development
+    CORS_ORIGINS: List[str] = ["*"]  # Allow all origins (development mode)
     
     # File Upload
     UPLOAD_DIR: str = "./uploads"
