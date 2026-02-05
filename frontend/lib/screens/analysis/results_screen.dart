@@ -448,7 +448,7 @@ class ResultsScreen extends StatelessWidget {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

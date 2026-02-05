@@ -39,7 +39,7 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      iconTheme: IconThemeData(color: AppColors.textDark),
+      iconTheme: const IconThemeData(color: AppColors.textDark),
       titleTextStyle: GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -66,7 +66,7 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: AppColors.border, width: 1),
+        side: const BorderSide(color: AppColors.border, width: 1),
       ),
     ),
   );
@@ -105,7 +105,7 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      iconTheme: IconThemeData(color: AppColors.textLight),
+      iconTheme: const IconThemeData(color: AppColors.textLight),
       titleTextStyle: GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -132,7 +132,7 @@ class AppTheme {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: AppColors.borderDark, width: 1),
+        side: const BorderSide(color: AppColors.borderDark, width: 1),
       ),
     ),
   );

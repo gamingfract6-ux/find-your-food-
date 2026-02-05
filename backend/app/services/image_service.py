@@ -5,7 +5,11 @@ import os
 import uuid
 import shutil
 from pathlib import Path
-from PIL import Image
+try:
+    from PIL import Image
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
 from io import BytesIO
 from typing import Tuple
 from app.config import settings
@@ -39,6 +43,12 @@ class ImageService:
         
         # Compress and save image
         try:
+            if not HAS_PIL:
+                # Fallback: Save raw bytes if PIL is missing
+                with open(file_path, "wb") as f:
+                    f.write(file_bytes)
+                return str(file_path), file_bytes
+
             image = Image.open(BytesIO(file_bytes))
             
             # Convert HEIC or other formats to JPEG

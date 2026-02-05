@@ -1,18 +1,58 @@
-"""
-AI Service for food recognition and analysis
-Uses Google Gemini Vision Pro for real-time food detection
-"""
 import time
 import os
 import json
 from typing import List, Dict, Tuple
-import google.generativeai as genai
-from PIL import Image
 import io
-from dotenv import load_dotenv
+import random
 
-# Load environment variables
-load_dotenv()
+# Try to import optional dependencies
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+try:
+    from PIL import Image
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
+
+# Try to import Gemini, fallback to Mock if missing
+try:
+    import google.generativeai as genai
+    HAS_GEMINI = True and HAS_PIL
+except ImportError:
+    HAS_GEMINI = False
+    print("[AI] WARNING: google-generativeai not found. Using Mock AI.")
+
+class MockAIService:
+    """Fallback Mock Service when Gemini is not available"""
+    def __init__(self):
+        print("[AI] Initializing Mock AI Service (Fallback)")
+    
+    async def analyze_image(self, image_bytes: bytes) -> Tuple[List[Dict], float]:
+        print("[AI] Mock Analysis Triggered")
+        # Return a generic result so app works
+        return [{
+            "name": "Mock Food",
+            "confidence": 0.99,
+            "calories": 250,
+            "protein": 10,
+            "carbs": 30,
+            "fats": 10,
+            "fiber": 2,
+            "sugar": 5,
+            "sodium": 300,
+            "portion": "1 serving",
+            "weight_grams": 100
+        }], 0.99
+
+    async def get_chat_response(self, message: str) -> str:
+        return "I am currently in Offline Mode because my brain (Google AI) could not be loaded. Please check backend logs."
+
+    def get_food_info(self, food_name: str) -> Dict:
+        return None
 
 class AIFoodRecognitionService:
     """
@@ -21,6 +61,10 @@ class AIFoodRecognitionService:
     
     def __init__(self):
         """Initialize the AI service with Google API Key"""
+        if not HAS_GEMINI:
+            self.model = None
+            return
+
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
             print("[AI] WARNING: GOOGLE_API_KEY not found. AI features will fail.")
@@ -39,6 +83,12 @@ class AIFoodRecognitionService:
             print(f"[AI] Failed to initialize Gemini: {e}")
             self.model = None
             self.chat_model = None
+            
+# Global AI service instance
+if HAS_GEMINI:
+    ai_service = AIFoodRecognitionService()
+else:
+    ai_service = MockAIService()
     
     async def get_chat_response(self, message: str) -> str:
         """
@@ -77,6 +127,10 @@ class AIFoodRecognitionService:
             # Fallback for when API key is missing (Return empty to prompt user)
             print("[AI] Error: Model not initialized (Missing API Key)")
             return [], 0.0
+
+        if not HAS_PIL:
+             print("[AI] Error: PIL not installed")
+             return [], 0.0
 
         start_time = time.time()
         
@@ -135,8 +189,4 @@ class AIFoodRecognitionService:
         # For now, we rely on the visual analysis. 
         # In a full upgrade, we would add a text-only Gemini fallback here.
         return None
-
-
-# Global AI service instance
-ai_service = AIFoodRecognitionService()
 

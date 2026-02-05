@@ -56,7 +56,7 @@ class _PremiumPaywallScreenState extends State<PremiumPaywallScreen> {
                       final index = entry.key;
                       final plan = entry.value;
                       return _buildPlanCard(index, plan);
-                    }).toList(),
+                    }),
                     
                     const SizedBox(height: 32),
                     // Purchase Button

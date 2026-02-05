@@ -150,18 +150,18 @@ class DashboardScreen extends StatelessWidget {
             radius: 80,
             lineWidth: 12,
             percent: percent,
-            center: Column(
+            center: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   '$consumed',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const Text(
+                Text(
                   'kcal',
                   style: TextStyle(
                     fontSize: 14,

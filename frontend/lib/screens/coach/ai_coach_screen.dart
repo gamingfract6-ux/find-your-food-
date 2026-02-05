@@ -120,7 +120,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AppColors.primaryGradient,
                 shape: BoxShape.circle,
               ),
@@ -183,7 +183,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             Container(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AppColors.primaryGradient,
                 shape: BoxShape.circle,
               ),
@@ -296,7 +296,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
-        border: Border(
+        border: const Border(
           top: BorderSide(color: AppColors.border),
         ),
       ),
@@ -306,18 +306,18 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             Expanded(
               child: TextField(
                 controller: _messageController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Ask me anything...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
                     borderSide: BorderSide(color: AppColors.border),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
                     borderSide: BorderSide(color: AppColors.border),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
+                  focusedBorder: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(24)),
                     borderSide: BorderSide(color: AppColors.primary, width: 2),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
@@ -332,7 +332,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             ),
             const SizedBox(width: 12),
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AppColors.primaryGradient,
                 shape: BoxShape.circle,
               ),

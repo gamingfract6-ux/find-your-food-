@@ -96,7 +96,7 @@ class _AnalyzingScreenState extends State<AnalyzingScreen>
                   ),
                 ),
                 const SizedBox(height: 16),
-                Text(
+                const Text(
                   'We couldn\'t identify the food in this image. Please try:\n\n• Better lighting\n• Clearer photo\n• Different angle',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -154,7 +154,7 @@ class _AnalyzingScreenState extends State<AnalyzingScreen>
               child: Container(
                 width: 60,
                 height: 60,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: AppColors.primaryGradient,
                   shape: BoxShape.circle,
                 ),
