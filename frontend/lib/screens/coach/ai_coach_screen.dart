@@ -308,19 +308,19 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                 controller: _messageController,
                 decoration: const InputDecoration(
                   hintText: 'Ask me anything...',
-                  border: const OutlineInputBorder(
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(24)),
                     borderSide: BorderSide(color: AppColors.border),
                   ),
-                  enabledBorder: const OutlineInputBorder(
+                  enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(24)),
                     borderSide: BorderSide(color: AppColors.border),
                   ),
-                  focusedBorder: const OutlineInputBorder(
+                  focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(24)),
                     borderSide: BorderSide(color: AppColors.primary, width: 2),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(
+                  contentPadding: EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 12,
                   ),
