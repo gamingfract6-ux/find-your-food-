@@ -272,7 +272,13 @@ class DashboardScreen extends StatelessWidget {
         subtitle: Text(calories > 0 ? '$calories kcal' : 'Not logged yet'),
         trailing: const Icon(Icons.add_circle_outline, color: AppColors.primary),
         onTap: () {
-          // Navigate to add meal
+          // Navigate to camera screen to add meal
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CameraScreen(),
+            ),
+          );
         },
       ),
     );

@@ -147,16 +147,19 @@ class ApiService {
   Future<String> sendChatMessage(String message) async {
     try {
       final response = await _dio.post(
-        '/chat',
+        '/chat',  // Fixed: Backend route is /api/chat (no v1)
         data: {'message': message},
       );
       return response.data['response'];
     } catch (e) {
-      if (e is DioException && e.response?.statusCode == 404) {
-        // Fallback for mocked backend if endpoint doesn't exist yet
-        return "I'm having trouble connecting to my brain right now. Please try again later.";
+      if (e is DioException) {
+        if (e.response?.statusCode == 404) {
+          throw Exception('Chat service not available. Please try again later.');
+        } else if (e.response?.statusCode == 500) {
+          throw Exception('AI service error. Please try again.');
+        }
       }
-      rethrow;
+      throw Exception('Failed to send message: ${e.toString()}');
     }
   }
 }

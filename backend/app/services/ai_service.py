@@ -80,15 +80,8 @@ class AIFoodRecognitionService:
             self.chat_model = genai.GenerativeModel('gemini-pro')
             
         except Exception as e:
-            print(f"[AI] Failed to initialize Gemini: {e}")
             self.model = None
             self.chat_model = None
-            
-# Global AI service instance
-if HAS_GEMINI:
-    ai_service = AIFoodRecognitionService()
-else:
-    ai_service = MockAIService()
     
     async def get_chat_response(self, message: str) -> str:
         """
@@ -190,3 +183,9 @@ else:
         # In a full upgrade, we would add a text-only Gemini fallback here.
         return None
 
+            
+# Global AI service instance
+if HAS_GEMINI:
+    ai_service = AIFoodRecognitionService()
+else:
+    ai_service = MockAIService()

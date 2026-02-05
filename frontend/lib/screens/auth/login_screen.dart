@@ -159,8 +159,9 @@ class LoginScreen extends StatelessWidget {
   }
 
   void _handleGoogleSignIn(BuildContext context) {
-    // TODO: Implement actual Google Sign-In
-    // For now, navigate directly to dashboard
+    // Simplified authentication flow for demo
+    // In production, this would use Google Sign-In with backend validation
+    // For now, navigate directly to dashboard for testing
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => const DashboardScreen()),
     );

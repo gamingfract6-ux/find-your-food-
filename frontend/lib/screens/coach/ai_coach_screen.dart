@@ -84,16 +84,26 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     } catch (e) {
       if (!mounted) return;
       
+      // Show error as snackbar instead of adding to chat
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('⚠️ Connection error: ${e.toString().replaceAll('Exception: ', '')}'),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: () {
+              _messageController.text = userMessage.content;
+              _sendMessage();
+            },
+          ),
+        ),
+      );
+      
       setState(() {
-        _messages.add(ChatMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          content: "Sorry, I'm having trouble connecting to the server. Please match sure the backend is running!",
-          isUser: false,
-          timestamp: DateTime.now(),
-        ));
         _isTyping = false;
       });
-      _scrollToBottom();
     }
   }
 
