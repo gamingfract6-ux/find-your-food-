@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../../config/colors.dart';
+import '../../services/auth_service.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
 
@@ -11,6 +12,11 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = AuthService.instance;
+    final userName = auth.userName ?? 'User';
+    final userEmail = auth.userEmail ?? 'user@example.com';
+    final userPhoto = auth.userPhotoUrl;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       body: CustomScrollView(
@@ -38,26 +44,26 @@ class ProfileScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 3),
-                          image: const DecorationImage(
+                          image: DecorationImage(
                             image: NetworkImage(
-                              'https://ui-avatars.com/api/?name=John+Doe&size=200&background=10B981&color=fff',
+                              userPhoto ?? 'https://ui-avatars.com/api/?name=$userName&size=200&background=10B981&color=fff',
                             ),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'John Doe',
-                        style: TextStyle(
+                      Text(
+                        userName,
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      const Text(
-                        'john.doe@email.com',
-                        style: TextStyle(
+                      Text(
+                        userEmail,
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
                         ),

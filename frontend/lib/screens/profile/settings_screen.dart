@@ -354,11 +354,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+              
+              // Sign out
+              await AuthService.instance.signOut();
+              
+              if (!mounted) return;
+              
+              // Close loading dialog
               Navigator.pop(context);
-              // Handle logout
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Logged out successfully!')),
+              
+              // Navigate to login screen
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/login',
+                (route) => false,
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),

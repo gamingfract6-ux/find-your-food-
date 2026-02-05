@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../config/colors.dart';
+import '../../services/auth_service.dart';
 import '../home/dashboard_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -86,37 +94,52 @@ class LoginScreen extends StatelessWidget {
                 Column(
                   children: [
                     // Google Sign In Button
-                    ElevatedButton(
-                      onPressed: () => _handleGoogleSignIn(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: AppColors.textDark,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.network(
-                            'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                            height: 24,
-                            width: 24,
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _handleGoogleSignIn,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.textDark,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
                           ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Continue with Google',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ],
+                          elevation: 0,
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.primary,
+                                  ),
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.network(
+                                    'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                                    height: 24,
+                                    width: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'Continue with Google',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -158,12 +181,45 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  void _handleGoogleSignIn(BuildContext context) {
-    // Simplified authentication flow for demo
-    // In production, this would use Google Sign-In with backend validation
-    // For now, navigate directly to dashboard for testing
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const DashboardScreen()),
-    );
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final success = await AuthService.instance.signInWithGoogle();
+      
+      if (!mounted) return;
+
+      if (success) {
+        // Navigate to dashboard
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      } else {
+        // User canceled or error occurred
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sign in canceled or failed. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }
