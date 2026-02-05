@@ -6,10 +6,13 @@ import 'package:flutter/foundation.dart';
 
 class AppConstants {
   // API Configuration
-  // API Configuration
   static String get apiBaseUrl {
-    if (kIsWeb) return 'http://localhost:8000/api';
-    return 'http://10.0.2.2:8000/api'; // Android Emulator
+    // Production backend on Render
+    return 'https://findyourfood-backend.onrender.com/api';
+    
+    // Uncomment below for local development:
+    // if (kIsWeb) return 'http://localhost:8000/api';
+    // return 'http://10.0.2.2:8000/api'; // Android Emulator
   }
   static const String apiVersion = '/v1';
   

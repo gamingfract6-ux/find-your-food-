@@ -1,11 +1,14 @@
 //
 
 
-import 'dart:io';
+import'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../config/colors.dart';
 import '../../models/food_analysis.dart';
+import '../../models/meal_log.dart';
+import '../../services/database_service.dart';
+import '../../utils/string_extensions.dart';
 
 class ResultsScreen extends StatelessWidget {
   final File imageFile;
@@ -73,21 +76,287 @@ class ResultsScreen extends StatelessWidget {
             
             const SizedBox(height: 24),
             
-            // Add to Diary Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                },
-                child: const Text('Add to Diary'),
-              ),
-            ),
+            // Save to Meal Button - Premium UX
+            _buildSaveMealButton(context),
             
             const SizedBox(height: 40),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showMealTypeSelector(BuildContext context) async {
+    // Auto-detect meal type based on current time
+    final suggestedMealType = MealLog.getMealTypeFromTime(DateTime.now());
+    
+    final mealTypes = [
+      {'type': 'breakfast', 'label': 'Breakfast', 'icon': '🌅', 'time': '5am-11am'},
+      {'type': 'lunch', 'label': 'Lunch', 'icon': '🌞', 'time': '11am-3pm'},
+      {'type': 'snacks', 'label': 'Snacks', 'icon': '🍿', 'time': '3pm-7pm'},
+      {'type': 'dinner', 'label': 'Dinner', 'icon': '🌙', 'time': '7pm-5am'},
+    ];
+
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Save to Meal',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Choose which meal to log this food to',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Meal Type Options
+              ...mealTypes.map((meal) {
+                final isSuggested = meal['type'] == suggestedMealType;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await _saveMealLog(context, meal['type'] as String);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: isSuggested ? AppColors.primaryGradient : null,
+                          color: isSuggested ? null : AppColors.backgroundLight,
+                          borderRadius: BorderRadius.circular(16),
+                          border: isSuggested ? null : Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            // Icon
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: isSuggested
+                                    ? Colors.white.withValues(alpha: 0.2)
+                                    : AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                meal['icon'] as String,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Label
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        meal['label'] as String,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: isSuggested ? Colors.white : AppColors.textDark,
+                                        ),
+                                      ),
+                                      if (isSuggested) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(alpha: 0.3),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Text(
+                                            'Suggested',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  Text(
+                                    meal['time'] as String,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isSuggested
+                                          ? Colors.white.withValues(alpha: 0.8)
+                                          : AppColors.textMedium,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Arrow
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              size: 16,
+                              color: isSuggested ? Colors.white : AppColors.textMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+              
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _saveMealLog(BuildContext context, String mealType) async {
+    try {
+      // Show loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              SizedBox(width: 12),
+              Text('Saving meal...'),
+            ],
+          ),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      // Save to database
+      final mealLog = MealLog.fromFoodAnalysis(
+        analysis: analysis,
+        mealType: mealType,
+      );
+      
+      await DatabaseService.instance.insertMealLog(mealLog);
+
+      if (!context.mounted) return;
+
+      // Show success
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 12),
+              Text('✨ Saved to ${mealType.capitalize()}!'),
+            ],
+          ),
+          backgroundColor: Colors.green.shade600,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate back to dashboard
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!context.mounted) return;
+      
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      
+    } catch (e) {
+      if (!context.mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving meal: ${e.toString()}'),
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
+    }
+  }
+
+  Widget _buildSaveMealButton(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showMealTypeSelector(context),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.bookmark_add, color: Colors.white, size: 24),
+                SizedBox(width: 12),
+                Text(
+                  'Save to Meal Log',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
